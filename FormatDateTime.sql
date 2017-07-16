@@ -1,3 +1,5 @@
+USE [farma]
+GO
 
 /****** Object:  UserDefinedFunction [dbo].[FormatDateTime]    Script Date: 06.11.16 10:07:28 ******/
 SET ANSI_NULLS ON
