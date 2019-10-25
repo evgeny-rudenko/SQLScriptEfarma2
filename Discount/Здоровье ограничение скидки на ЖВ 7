@@ -1,0 +1,95 @@
+-- =============================================
+-- Author:		Evgeny Rudenko
+-- Create date: 09-01-2019
+-- Description:	Заполнение цен со скидкой в АРМ Кассира 
+--              
+-- =============================================
+CREATE PROCEDURE [dbo].[DISCOUNT2_SPECIAL_20]
+@PARAMS VARCHAR(4000)
+AS
+    -- Для предоставления скидки нужно обоновить поля таблицы #CHEQUEINFO
+    -- SUM_WITH_DISCOUNT -- сумма со скидкой
+    -- DISCOUNT_VALUE -- размер скидки
+    -----------------------------------
+    -- Другие поля (их обновлять НЕЛЬЗЯ)
+    -- CHEQUE_DATE - дата чека
+    -- ID_DISCOUNT2_CARD_GLOBAL - ИД дисконтной карты
+    -- ID_LOT_GLOBAL - ИД партии
+    -- QTY - количество
+    -- PRICE - цена розничная с НДС
+    -- PRICE_SUP - цена постащика с НДС
+    -- CHEQUE_SUM - сумма ВСЕГО чека
+    -- SUM_WITH_DISCOUNT - сумма со скидкой по строке
+    -- DISCOUNT_VALUE - значение скидки в деньгах
+begin
+if object_id('tempdb..#CHEQUEINFO') is null
+return;
+
+
+-- EXISTS (SELECT NULL FROM GOODS WHERE GOODS.ID_GOODS = LOT.ID_GOODS AND GOODS.IMPORTANT=1)
+-- Нужно выкинуть ЖВ препараты - не всегда правильно пересчитывает АРМ Кассира. Внутри есть округления
+-- non important
+update #CHEQUEINFO
+set		DISCOUNT_VALUE		= QTY * PRICE - 0.8*PRICE*QTY 
+		where ID_LOT_GLOBAL in (select ID_LOT_GLOBAL from LOT where LOT.ID_GOODS  in (select goods.ID_GOODS from GOODS where IMPORTANT =0))	
+-- important
+update #CHEQUEINFO
+set		DISCOUNT_VALUE		= QTY * PRICE - 0.93*PRICE*QTY 
+		where ID_LOT_GLOBAL in (select ID_LOT_GLOBAL from LOT where LOT.ID_GOODS  in (select goods.ID_GOODS from GOODS where IMPORTANT =1))	
+
+
+update #CHEQUEINFO
+set 	SUM_WITH_DISCOUNT	= QTY * PRICE - DISCOUNT_VALUE
+		where ID_LOT_GLOBAL in (select ID_LOT_GLOBAL from LOT where LOT.ID_GOODS  in (select goods.ID_GOODS from GOODS where IMPORTANT =0))	
+
+return
+end
+
+
+
+-- =============================================
+-- Author:		Evgeny Rudenko
+-- Create date: 09-01-2019
+-- Description:	Заполнение цен со скидкой в АРМ Кассира 
+--              
+-- =============================================
+CREATE PROCEDURE [dbo].[DISCOUNT2_SPECIAL_10]
+@PARAMS VARCHAR(4000)
+AS
+    -- Для предоставления скидки нужно обоновить поля таблицы #CHEQUEINFO
+    -- SUM_WITH_DISCOUNT -- сумма со скидкой
+    -- DISCOUNT_VALUE -- размер скидки
+    -----------------------------------
+    -- Другие поля (их обновлять НЕЛЬЗЯ)
+    -- CHEQUE_DATE - дата чека
+    -- ID_DISCOUNT2_CARD_GLOBAL - ИД дисконтной карты
+    -- ID_LOT_GLOBAL - ИД партии
+    -- QTY - количество
+    -- PRICE - цена розничная с НДС
+    -- PRICE_SUP - цена постащика с НДС
+    -- CHEQUE_SUM - сумма ВСЕГО чека
+    -- SUM_WITH_DISCOUNT - сумма со скидкой по строке
+    -- DISCOUNT_VALUE - значение скидки в деньгах
+begin
+if object_id('tempdb..#CHEQUEINFO') is null
+return;
+
+
+-- EXISTS (SELECT NULL FROM GOODS WHERE GOODS.ID_GOODS = LOT.ID_GOODS AND GOODS.IMPORTANT=1)
+-- Нужно выкинуть ЖВ препараты - не всегда правильно пересчитывает АРМ Кассира. Внутри есть округления
+-- non important
+update #CHEQUEINFO
+set		DISCOUNT_VALUE		= QTY * PRICE - 0.9*PRICE*QTY 
+		where ID_LOT_GLOBAL in (select ID_LOT_GLOBAL from LOT where LOT.ID_GOODS  in (select goods.ID_GOODS from GOODS where IMPORTANT =0))	
+-- important
+update #CHEQUEINFO
+set		DISCOUNT_VALUE		= QTY * PRICE - 0.93*PRICE*QTY 
+		where ID_LOT_GLOBAL in (select ID_LOT_GLOBAL from LOT where LOT.ID_GOODS  in (select goods.ID_GOODS from GOODS where IMPORTANT =1))	
+
+
+update #CHEQUEINFO
+set 	SUM_WITH_DISCOUNT	= QTY * PRICE - DISCOUNT_VALUE
+		where ID_LOT_GLOBAL in (select ID_LOT_GLOBAL from LOT where LOT.ID_GOODS  in (select goods.ID_GOODS from GOODS where IMPORTANT =0))	
+
+return
+end
