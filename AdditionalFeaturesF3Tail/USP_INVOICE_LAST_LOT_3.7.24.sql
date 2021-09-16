@@ -1,6 +1,6 @@
 USE [eplus_work]
 GO
-/****** Object:  StoredProcedure [dbo].[USP_INVOICE_LAST_LOTS]    Script Date: 13.09.2021 0:47:42 ******/
+/****** Object:  StoredProcedure [dbo].[USP_INVOICE_LAST_LOTS]    Script Date: 17.09.2021 6:24:38 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -40,7 +40,8 @@ AS
 		L.ID_SCALING_RATIO,
 		L.ID_STORE,
 		L.ID_GOODS,
-		L.ID_TABLE
+		L.ID_TABLE,
+		L.PRICE_SAL -- Добавил столбец
 	into #LOT_RAW
 	FROM LOT L
 	WHERE L.ID_TABLE in (2,30)
@@ -52,6 +53,7 @@ AS
 		-- ЖВ препараты отбрасываем
 		and L.ID_GOODS not in (select ID_GOODS from GOODS_2_GROUP where ID_GOODS_GROUP = 390 and ID_GOODS not in (select ID_GOODS from GOODS where GOODS.IMPORTANT =1) ) -- выбрасываем то что  в ассортиментном плане
 		-- 2021
+		and L.INCOMING_DATE > GETDATE()-90 --- в старых накладных могут быть ОЧЕНЬ высокие цены. Берем только за три последних месяца
 	CREATE UNIQUE CLUSTERED INDEX IX_TEMP_T2 ON #LOT_RAW (ID_LOT_GLOBAL)
 
 	select L.*
@@ -80,7 +82,7 @@ AS
 			FROM #LOT L
 			WHERE L.QUANTITY_ADD > 0
 				AND L.ID_STORE = @ID_STORE
-			ORDER BY L.INVOICE_DATE DESC
+			ORDER BY L.PRICE_SAL DESC   -- L.INVOICE_DATE DESC
 		) LAST_LOT ON LAST_LOT.ID_LOT_GLOBAL = L.ID_LOT_GLOBAL
 		LEFT JOIN (
 			SELECT
@@ -285,7 +287,7 @@ AS
 			WHERE L.ID_TABLE in (2,30)
 				AND L.QUANTITY_ADD > 0
 				AND S.ID_CONTRACTOR = @ID_CONTRACTOR
-			ORDER BY L.INVOICE_DATE DESC
+			ORDER BY  L.PRICE_SAL DESC  ---L.INVOICE_DATE DESC
         ) LAST_LOT ON LAST_LOT.ID_LOT_GLOBAL = L.ID_LOT_GLOBAL
 
 		INSERT INTO #LAST_LOT_INFO
