@@ -1,6 +1,25 @@
 /*
 Список КИЗов по накладным. 
 Все данные по поставкам в одной плоской таблице 
+
+delete from KIZ_2_DOCUMENT_ITEM
+where ID_KIZ_GLOBAL in (
+select ID_KIZ_GLOBAL from kiz 
+where kiz.GTIN_SGTIN in (
+select gtin_sgtin from v_invoice_kiz
+where mnemocode = '300/ПН-00000079')
+and kiz.ID_KIZ_GLOBAL not in (
+select id_kiz_global  from v_invoice_kiz
+where mnemocode = '300/ПН-00000079')
+)
+
+delete from kiz
+where kiz.GTIN_SGTIN in (
+select gtin_sgtin from v_invoice_kiz
+where mnemocode = '300/ПН-00000079')
+and kiz.ID_KIZ_GLOBAL not in (
+select id_kiz_global  from v_invoice_kiz
+where mnemocode = '300/ПН-00000079')
 */
 
 CREATE VIEW [dbo].[V_INVOICE_KIZ]
